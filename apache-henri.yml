@@ -1,0 +1,55 @@
+---
+- hosts: debian
+  become: yes
+
+  tasks:
+    - name: installeerime apache2 deb
+      apt:
+        name: apache2
+        update_cache: yes
+        state: latest
+      when: "'debian' in group_names"
+
+    - name: Loome public_html kataloog user_ile
+      file:
+        path: /home/user/public_html
+        owner: user
+        group: user
+        mode: "0755"
+        state: directory
+
+    - name: muudab /home/user kasuta õigusi
+      file:
+        path: /home/user
+        owner: user
+        group: user
+        mode: "0755"
+        state: directory
+
+    - name: Lubame userdir mod
+      apache2_module: name=userdir state=present
+
+    - name: Apache2 serverile alglaadimine(restart)
+      service:
+        name: apache2
+        state: restarted
+
+    -  name: "Kopeerime index.html fail USER_ile kodus_public_html kataloogi"
+       copy:
+          src: /var/www/html/index.html
+          dest: /home/user/public_html
+          remote_src: yes
+          owner: user
+          group: user
+
+    - name: user index.html redigeerimine
+      lineinfile:
+        path: /home/user/public_html/index.html
+        state: present
+        regexp: "Apache2 Debian Default"
+        line: "Moi veebileht"
+
+    - name: Alglaadimine Apache2
+      service:
+        name: apache2
+        state: restarted
