@@ -1,0 +1,41 @@
+
+---
+- hosts: klient-deb
+  tasks:
+    - name: installib php-common
+      apt:
+        name: php-cli
+        update_cache: yes
+        state: latest
+    - name: installib libapache2-mod-php
+      apt:
+        name: libapache2-mod-php
+        update_cache: yes
+        state: latest
+    - name: installib php-mysql
+      apt:
+        name: php-mysql
+        update_cache: yes
+        state: latest
+
+    - name: phpinfo.php faili loomine
+      file:
+        path: /var/www/html/phpinfo.php
+        owner: user
+        group: user
+        mode: "0755"
+        state: touch
+
+    - name: kirjutab vajaliku test info php faili
+      ansible.builtin.copy:
+        dest: /var/www/html/phpinfo.php
+        content: |
+          <?php
+          phpinfo();
+          ?>
+
+    - name: Alglaadimine Apache2
+      service:
+        name: apache2
+        state: restarted
+
